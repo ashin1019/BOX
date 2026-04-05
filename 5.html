@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>直播點歌 - 文青極簡版</title>
+    <style>
+        /* Define Morandi & Minimalist Palette */
+        :root {
+            --bg-color: #FAFAFA;          /* 純淨米白 */
+            --panel-bg: #FFFFFF;          /* 純白 */
+            --text-primary: #4A4A4A;      /* 深灰 (代替純黑) */
+            --text-secondary: #9B9B9B;    /* 淺灰 */
+            --accent-warm: #D4C4A8;       /* 燕麥色 */
+            --accent-active: #A89B8D;     /* 亞麻棕 */
+            --wheel-border: #E0E0E0;      /* 極淺灰 */
+            --shadow-subtle: rgba(0,0,0,0.05); /* 超輕陰影 */
+        }
+
+        body { 
+            display: flex; flex-direction: column; height: 100vh; margin: 0; 
+            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Microsoft JhengHei", sans-serif; 
+            background: var(--bg-color); color: var(--text-primary); overflow: hidden; 
+            -webkit-font-smoothing: antialiased; /* 抗鋸齒，讓字體更清秀 */
+        }
+        
+        /* 控制台區域：增大留白，營造空間感 */
+        .admin-panel { 
+            height: 42%; padding: 25px 20px; 
+            background: var(--panel-bg); 
+            border-bottom: 1px solid var(--wheel-border); 
+            z-index: 100; box-sizing: border-box; 
+            overflow-y: auto; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        .panel-title { 
+            font-size: 13px; color: var(--text-secondary); 
+            letter-spacing: 2px; /* 字距拉開，更有文氣 */
+            margin-bottom: 15px; text-transform: uppercase;
+        }
+
+        /* 分類按鈕組：改為淡雅的燕麥色系 */
+        .category-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; width: 100%;}
+        .cat-btn { 
+            padding: 8px 18px; background: var(--panel-bg); color: var(--accent-active); 
+            border: 1px solid var(--accent-warm); 
+            border-radius: 20px; font-size: 13px; cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); /* 優雅的過渡 */
+            letter-spacing: 1px;
+        }
+        
+        /* 點選後的亮起樣式：低調的亞麻棕與細微陰影 */
+        .cat-btn.all-active, .cat-btn.active { 
+            background: var(--accent-warm); color: white; border-color: var(--accent-warm);
+            box-shadow: 0 4px 10px rgba(212, 196, 168, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .action-row { width: 100%; display: flex; justify-content: center; margin-bottom: 15px; }
+        .spin-btn { 
+            width: 80%; padding: 12px; 
+            background: var(--accent-active); color: white; 
+            font-size: 16px; font-weight: 300; /* 字重減輕 */
+            border: none; border-radius: 25px; cursor: pointer; 
+            transition: all 0.3s; letter-spacing: 2px;
+        }
+        .spin-btn:active { transform: scale(0.98); background: #96897B; }
+        
+        textarea { 
+            width: 90%; height: 40px; 
+            background: var(--bg-color); color: var(--text-primary); 
+            border: 1px solid var(--wheel-border); 
+            font-size: 12px; border-radius: 8px; padding: 8px; box-sizing: border-box; 
+            font-family: monospace; /* 保持代碼感 */
+            resize: none;
+        }
+        
+        /* 顯示面板：純淨背景，突出轉盤 */
+        .display-panel { height: 58%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); }
+        
+        /* 轉盤外殼：改為細緻的淺灰邊框 */
+        .wheel-container { 
+            position: relative; width: 250px; height: 250px; 
+            border: 2px solid var(--wheel-border); 
+            border-radius: 50%; padding: 5px; background: white;
+            box-shadow: 0 10px 30px var(--shadow-subtle);
+        }
+        
+        /* 指針：改為簡約的亞麻棕色線條 */
+        .pointer { 
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%); 
+            width: 2px; height: 30px; background: var(--accent-active); z-index: 10; 
+        }
+        .pointer::after { /* 指針頭部的小圓點 */
+            content: ''; position: absolute; bottom: -5px; left: -4px;
+            width: 10px; height: 10px; background: var(--accent-active); border-radius: 50%;
+        }
+
+        #wheel { 
+            width: 100%; height: 100%; border-radius: 50%; position: relative; 
+            transition: transform 2.5s cubic-bezier(0.1, 0, 0.1, 1); 
+            background: conic-gradient(#EEE 0%, #FFF 100%); /* 初始灰色 */
+        }
+
+        /* 結果顯示：優雅的燕麥色，減小字體 */
+        #result { 
+            margin-top: 25px; font-size: 24px; color: var(--accent-active); 
+            font-weight: 300; text-align: center; height: 30px; 
+            letter-spacing: 1px; padding: 0 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="snd_spin" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3" preload="auto" loop></audio>
+    <audio id="snd_win" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3" preload="auto"></audio>
+
+    <div class="admin-panel">
+        <div class="panel-title">LIFESTYLE JUKEBOX</div>
+        
+        <div class="category-group">
+            <button class="cat-btn" id="btn_all" onclick="selectAllSongs(this)">✨全部</button>
+            <button class="cat-btn active" onclick="selectCategory('國語', this)">國語</button>
+            <button class="cat-btn" onclick="selectCategory('台語', this)">台語</button>
+            <button class="cat-btn" onclick="selectCategory('粵語', this)">粵語</button>
+            <button class="cat-btn" onclick="selectCategory('老歌', this)">老歌</button>
+            <button class="cat-btn" onclick="selectCategory('新歌', this)">新歌</button>
+        </div>
+        <div class="action-row">
+            <button class="spin-btn" onclick="spinWheel()">隨機選歌 (SPIN)</button>
+        </div>
+        <textarea id="song_editor" oninput="saveCurrentSongs()"></textarea>
+    </div>
+
+    <div class="display-panel">
+        <div class="pointer"></div>
+        <div class="wheel-container">
+            <div id="wheel"></div>
+        </div>
+        <div id="result">準備抽歌...</div>
+    </div>
+
+    <script>
+        // 經典歌單 (不變)
+        let songDatabase = {
+            "國語": "告白氣球,演員,晴天,十年,小幸運,那些年,修煉愛情,泡沫,關鍵詞,說好不哭",
+            "台語": "浪子回頭,愛拼才會贏,家後,傷心酒店,雨夜花,男人情女人心,繁華攏是夢",
+            "粵語": "海闊天空,紅日,富士山下,友情歲月,講不出再見,千千闕歌,月半小夜曲",
+            "老歌": "甜蜜蜜,小城故事,月亮代表我的心,往事只能回味,夜來香,恰似你的溫柔",
+            "新歌": "這世界那麼多人,孤勇者,烏梅子醬,如果可以,刻在我心底的名字,飛鳥和蟬"
+        };
+
+        // 文青風格莫蘭迪色系 (Morandi Palette)
+        // 這些顏色低飽和度、帶有灰色調，看起來柔和高級
+        const morandiColors = [
+            "#D8C3A5", /* 燕麥白 */
+            "#8E8D8A", /* 石板灰 */
+            "#E98074", /* 珊瑚粉 */
+            "#A8D0E6", /* 霧霾藍 */
+            "#C2CAD0", /* 淺鋼灰 */
+            "#F4EAE1", /* 奶油白 */
+            "#B8A99A", /* 亞麻棕 */
+            "#D1E8E2", /* 薄荷灰 */
+            "#EAE7DC", /* 象牙白 */
+            "#F8B195"  /* 淺桃色 */
+        ];
+
+        let currentCategory = "國語";
+        let isAllMode = false;
+        let currentRotation = 0;
+        let isSpinning = false;
+        const sndSpin = document.getElementById('snd_spin');
+        const sndWin = document.getElementById('snd_win');
+
+        window.onload = () => {
+            document.getElementById('song_editor').value = songDatabase[currentCategory];
+            updateWheel();
+        };
+
+        function selectAllSongs(btnElement) {
+            if (isSpinning) return;
+            isAllMode = true;
+            clearActiveClasses();
+            btnElement.classList.add('all-active');
+            let allSongs = Object.values(songDatabase).join(',');
+            document.getElementById('song_editor').value = allSongs;
+            document.getElementById('result').innerText = "已彙整全部歌曲";
+            updateWheel();
+        }
+
+        function selectCategory(cat, btnElement) {
+            if (isSpinning) return;
+            isAllMode = false;
+            clearActiveClasses();
+            btnElement.classList.add('active');
+            currentCategory = cat;
+            document.getElementById('song_editor').value = songDatabase[cat];
+            document.getElementById('result').innerText = "已選定：" + cat;
+            updateWheel();
+        }
+
+        function clearActiveClasses() {
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('active');
+                b.classList.remove('all-active');
+            });
+        }
+
+        function saveCurrentSongs() {
+            if (!isAllMode) {
+                songDatabase[currentCategory] = document.getElementById('song_editor').value;
+            }
+            updateWheel();
+        }
+
+        function updateWheel() {
+            const songs = document.getElementById('song_editor').value.split(',').filter(s => s.trim() !== "");
+            const wheel = document.getElementById('wheel');
+            const count = songs.length;
+            if (count === 0) {
+                wheel.style.background = "#EEE";
+                return;
+            }
+            
+            let gradientStr = "conic-gradient(";
+            
+            songs.forEach((song, i) => {
+                const start = (i * (360 / count)).toFixed(2);
+                const end = ((i + 1) * (360 / count)).toFixed(2);
+                // 使用低飽和度的莫蘭迪色系
+                gradientStr += `${morandiColors[i % morandiColors.length]} ${start}deg ${end}deg,`;
+            });
+            wheel.style.background = gradientStr.slice(0, -1) + ")";
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            const songs = document.getElementById('song_editor').value.split(',').filter(s => s.trim() !== "");
+            if (songs.length === 0) return;
+
+            isSpinning = true;
+            sndSpin.currentTime = 0;
+            sndSpin.playbackRate = 1.8;
+            sndSpin.play().catch(e => console.log("需點擊頁面激活音效"));
+
+            let rateTracker = 1.8;
+            let speedDownTimer = setInterval(() => {
+                if (rateTracker > 0.5) {
+                    rateTracker -= 0.08;
+                    sndSpin.playbackRate = rateTracker;
+                }
+            }, 80);
+
+            const extraDegrees = Math.floor(Math.random() * 360) + 2880; 
+            currentRotation += extraDegrees;
+            document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+            document.getElementById('result').innerText = "挑選中...";
+
+            setTimeout(() => {
+                clearInterval(speedDownTimer);
+                sndSpin.pause();
+                sndSpin.playbackRate = 1.0;
+                sndWin.currentTime = 0;
+                sndWin.play();
+
+                const finalAngle = (currentRotation % 360);
+                const segmentAngle = 360 / songs.length;
+                const index = Math.floor(((360 - (finalAngle % 360)) % 360) / segmentAngle);
+                
+                // 顯示結果，縮小字體以符合極簡風格
+                document.getElementById('result').innerText = "🎯 鎖定：" + songs[index];
+                isSpinning = false;
+                if (window.navigator.vibrate) window.navigator.vibrate([150, 50, 150]);
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
