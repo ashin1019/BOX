@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>直播點歌 - 文青大字版</title>
+    <title>直播点歌转盘 - 全量整合版</title>
     <style>
         :root {
             --bg-color: #FAFAFA;
@@ -17,44 +17,41 @@
 
         body { 
             display: flex; flex-direction: column; height: 100vh; margin: 0; 
-            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang TC", "Microsoft JhengHei", sans-serif; 
+            font-family: "Helvetica Neue", Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif; 
             background: var(--bg-color); color: var(--text-primary); overflow: hidden; 
             -webkit-font-smoothing: antialiased;
         }
         
-        /* 縮小上方控制區 */
         .admin-panel { 
-            height: 28%; padding: 15px; 
+            height: 42%; padding: 10px 15px; 
             background: var(--panel-bg); 
             border-bottom: 1px solid var(--wheel-border); 
             z-index: 100; box-sizing: border-box; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         
-        .panel-title { font-size: 10px; color: var(--text-secondary); letter-spacing: 4px; margin-bottom: 10px; text-transform: uppercase; }
+        .panel-title { font-size: 10px; color: var(--text-secondary); letter-spacing: 4px; margin-bottom: 8px; text-transform: uppercase; }
 
-        /* 縮小按鈕尺寸 */
-        .category-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
+        .category-group { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; justify-content: center; }
         .cat-btn { 
             padding: 6px 12px; background: var(--panel-bg); color: var(--accent-active); 
             border: 1px solid var(--accent-warm); 
-            border-radius: 15px; font-size: 13px; cursor: pointer; transition: all 0.3s;
+            border-radius: 15px; font-size: 12px; cursor: pointer; transition: all 0.3s;
         }
         .cat-btn.active, .cat-btn.all-active { background: var(--accent-warm); color: white; border-color: var(--accent-warm); }
 
         .spin-btn { 
-            width: 70%; padding: 10px; background: var(--accent-active); color: white; 
-            font-size: 16px; border: none; border-radius: 20px; cursor: pointer; letter-spacing: 2px;
+            width: 80%; padding: 12px; background: var(--accent-active); color: white; 
+            font-size: 16px; border: none; border-radius: 25px; cursor: pointer; letter-spacing: 2px;
+            box-shadow: 0 4px 15px rgba(168, 155, 141, 0.3);
         }
 
-        /* 隱藏編輯器，只在需要時顯示（或透過 console 修改） */
         #song_editor { display: none; }
 
-        /* 增大轉盤顯示區 */
-        .display-panel { height: 72%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); }
+        .display-panel { height: 58%; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-color); }
         
         .wheel-container { 
-            position: relative; width: 280px; height: 280px; 
+            position: relative; width: 240px; height: 240px; 
             border: 1px solid var(--wheel-border); border-radius: 50%; padding: 5px; background: white;
             box-shadow: 0 10px 40px rgba(0,0,0,0.03);
         }
@@ -64,12 +61,10 @@
 
         #wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform 2.5s cubic-bezier(0.1, 0, 0.1, 1); background: conic-gradient(#EEE 0%, #FFF 100%); }
 
-        /* 超大結果顯示 */
         #result { 
-            margin-top: 40px; font-size: 48px; color: var(--accent-active); 
+            margin-top: 20px; font-size: 28px; color: var(--accent-active); 
             font-weight: 700; text-align: center; width: 90%;
             letter-spacing: -1px; line-height: 1.2;
-            word-break: break-all; /* 防止長歌名溢出 */
             text-shadow: 0 2px 10px rgba(168, 155, 141, 0.2);
         }
     </style>
@@ -80,16 +75,18 @@
     <audio id="snd_win" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3" preload="auto"></audio>
 
     <div class="admin-panel">
-        <div class="panel-title">SELECT CATEGORY</div>
+        <div class="panel-title">MUSIC PLAYLIST</div>
         <div class="category-group">
-            <button class="cat-btn" id="btn_all" onclick="selectAllSongs(this)">全部</button>
-            <button class="cat-btn active" onclick="selectCategory('國語', this)">國語</button>
-            <button class="cat-btn" onclick="selectCategory('台語', this)">台語</button>
-            <button class="cat-btn" onclick="selectCategory('粵語', this)">粵語</button>
-            <button class="cat-btn" onclick="selectCategory('老歌', this)">老歌</button>
-            <button class="cat-btn" onclick="selectCategory('新歌', this)">新歌</button>
+            <button class="cat-btn" id="btn_all" onclick="selectAllSongs(this)">全部歌曲</button>
+            <button class="cat-btn active" onclick="selectCategory('周杰伦', this)">周杰伦</button>
+            <button class="cat-btn" onclick="selectCategory('陈绮贞', this)">陈绮贞</button>
+            <button class="cat-btn" onclick="selectCategory('梁静茹', this)">梁静茹</button>
+            <button class="cat-btn" onclick="selectCategory('质感文青', this)">质感文青</button>
+            <button class="cat-btn" onclick="selectCategory('乐团组合', this)">乐团组合</button>
+            <button class="cat-btn" onclick="selectCategory('粤语精选', this)">粤语</button>
+            <button class="cat-btn" onclick="selectCategory('闽南语精选', this)">闽南语</button>
         </div>
-        <button class="spin-btn" onclick="spinWheel()">SPIN</button>
+        <button class="spin-btn" onclick="spinWheel()">点击开始抽取</button>
         <textarea id="song_editor"></textarea>
     </div>
 
@@ -98,33 +95,40 @@
         <div class="wheel-container">
             <div id="wheel"></div>
         </div>
-        <div id="result">---</div>
+        <div id="result">准备就绪</div>
     </div>
 
     <script>
-        let songDatabase = {
-            "國語": "告白氣球,演員,晴天,十年,小幸運,那些年,修煉愛情,泡沫,關鍵詞,說好不哭",
-            "台語": "浪子回頭,愛拼才會贏,家後,傷心酒店,雨夜花,男人情女人心,繁華攏是夢",
-            "粵語": "海闊天空,紅日,富士山下,友情歲月,講不出再見,千千闕歌,月半小夜曲",
-            "老歌": "甜蜜蜜,小城故事,月亮代表我的心,往事只能回味,夜來香,恰似你的溫柔",
-            "新歌": "這世界那麼多人,孤勇者,烏梅子醬,如果可以,刻在我心底的名字,飛鳥和蟬"
+        const songDatabase = {
+            "周杰伦": "周杰伦 - 晴天,周杰伦 - 稻香,周杰伦 - 安静,周杰伦 - 简单爱,周杰伦 - 黑色毛衣,周杰伦 - 七里香,周杰伦 - 青花瓷,周杰伦 - 告白气球,周杰伦 - 红尘客栈,周杰伦 - 最长的电影,周杰伦 - 说好的幸福呢,周杰伦 - 给我一首歌的时间,周杰伦 - 烟花易冷,周杰伦 - 雨下一整晚,周杰伦 - 蒲公英的约定,周杰伦 - 画沙,周杰伦 - 可爱女人",
+            "陈绮贞": "陈绮贞 - 旅行的意义,陈绮贞 - 太聪明,陈绮贞 - 我喜欢上你时的内心活动,陈绮贞 - after17,陈绮贞 - 慢歌1,陈绮贞 - 鱼,陈绮贞 - 华丽的冒险,陈绮贞 - 告诉我,陈绮贞 - 小步舞曲",
+            "梁静茹": "梁静茹 - 暖暖,梁静茹 - 勇气,梁静茹 - 给未来的自己,梁静茹 - 会呼吸的痛,梁静茹 - 慢冷,梁静茹 - 爱久见人心,梁静茹 - 小手拉大手,梁静茹 - 分手快乐,梁静茹 - 没有如果,梁静茹 - 可惜不是你,梁静茹 - 纯真,梁静茹 - 宁夏,梁静茹 - 听不到",
+            "质感文青": "陈绮贞 - 旅行的意义,陈绮贞 - 太聪明,陈绮贞 - 我喜欢上你时的内心活动,苏打绿 - 小情歌,苏打绿 - 他夏了夏天,苏打绿 - 无与伦比的美丽,苏打绿 - 喜欢寂寞,魏如萱 - 你啊你啊,魏如萱 - 我在纽约打电话给你,卢广仲 - 鱼仔,卢广仲 - 慢灵魂,卢广仲 - 几分之几,阿肆 - 世界上的另一个我,阿肆 - 致姗姗来迟的你,阿肆 - 我在人民广场吃炸鸡,孙燕姿 - 天黑黑,孙燕姿 - 遇见,孙燕姿 - 我怀念的,孙燕姿 - 我不难过,孙燕姿 - 开始懂了,陈粒 - 小半,陈粒 - 走马,陈粒 - 虚拟,陈粒 - 奇妙能力歌,陈粒 - 历历万乡,单依纯 - 想你时风起,单依纯 - R&B All Night,徐佳莹 - 身骑白马,徐佳莹 - 失落的沙洲,蔡健雅 - 达尔文,蔡健雅 - 红色高跟鞋,蔡健雅 - Letting Go,田馥甄 - 小幸运,田馥甄 - 你就不要想起我,莫文蔚 - 忽然之间,莫文蔚 - 慢慢喜欢你,莫文蔚 - 这世界那么多人,王菲 - 红豆,王菲 - 匆匆那年,王菲 - 旋木,林宥嘉 - 想自由,林宥嘉 - 兜圈,林宥嘉 - 浪费",
+            "乐团组合": "五月天 - 温柔,五月天 - 拥抱,五月天 - 知足,五月天 - 突然好想你,五月天 - 我不愿让你一个人,五月天 - 志明与春娇,五月天 - 憨人,五月天 - 孙悟空,苏打绿 - 小情歌,苏打绿 - 我好想你,苏打绿 - 无眠(国语),苏打绿 - 无眠(台语),苏打绿 - 你被写在我的歌里,苏打绿 - 无与伦比的美丽,苏打绿 - 他夏了夏天,苏打绿 - 喜欢寂寞,告五人 - 爱在夏天,告五人 - 好不容易,告五人 - 唯一,告五人 - 爱人错过,告五人 - 给你一瓶魔法药水,告五人 - 我想要占据你,S.H.E - 触电,S.H.E - Super Star,S.H.E - 恋人未满,S.H.E - 热带雨林,S.H.E - 中国话,S.H.E - 不想长大,BY2 - 我知道,BY2 - 爱丫爱丫,BY2 - 爱的双重魔力",
+            "粤语精选": "谢安琪 - 喜帖街,陈僖仪 - 蜚蜚,AGA - 孤雏,陈奕迅 - 富士山下,杨千嬅 - 少女的祈祷,杨千嬅 - 再见二丁目,李幸倪 - 一格格,容祖儿 - 心淡,李克勤 - 月半小夜曲,杨千嬅 - 可惜我是水瓶座",
+            "闽南语精选": "卢广仲 - 鱼仔,魏如萱 - 你啊你啊,苏打绿 - 无眠,张秀卿 - 车站,袁小迪/龙千玉 - 男人情女人心,茄子蛋 - 浪子回头,茄子蛋 - 万千花蕊慈母悲哀,黄乙玲 - 同花顺,珂拉琪 - Aphrodite,珂拉琪 - 生份的你,珂拉琪 - 两人雨天,珂拉琪 - 好野,S.H.E - 我爱雨夜花,王力宏/任家萱 - 你是我心内的一首歌,五月天 - 志明与春娇,五月天 - 憨人,五月天 - 出口,江蕙 - 落雨声,曾玮中 - 必巡,徐若瑄 - 别人的,曹雅雯 - 阿嬷的花,茄子蛋 - 浪流连,郑宜农 - 最好的距离,李千那 - 心花开,琳谊 - 蚵仔面线,萧煌奇 - 上爱唱的歌,叶启田 - 爱拼才会赢,江蕙 - 家后"
         };
 
         const morandiColors = ["#D8C3A5", "#8E8D8A", "#E98074", "#A8D0E6", "#C2CAD0", "#F4EAE1", "#B8A99A", "#D1E8E2", "#EAE7DC", "#F8B195"];
-        let currentCategory = "國語";
         let currentRotation = 0;
         let isSpinning = false;
         const sndSpin = document.getElementById('snd_spin');
         const sndWin = document.getElementById('snd_win');
 
-        window.onload = () => { selectCategory('國語', document.querySelector('.cat-btn.active')); };
+        window.onload = () => { selectCategory('周杰伦', document.querySelector('.cat-btn.active')); };
 
         function selectAllSongs(btnElement) {
             if (isSpinning) return;
             clearActiveClasses();
             btnElement.classList.add('all-active');
-            document.getElementById('song_editor').value = Object.values(songDatabase).join(',');
-            document.getElementById('result').innerText = "READY";
+            let allSongs = [];
+            Object.values(songDatabase).forEach(list => {
+                list.split(',').forEach(song => {
+                    if (!allSongs.includes(song.trim())) allSongs.push(song.trim());
+                });
+            });
+            document.getElementById('song_editor').value = allSongs.join(',');
+            document.getElementById('result').innerText = "全部精选歌曲";
             updateWheel();
         }
 
@@ -132,7 +136,6 @@
             if (isSpinning) return;
             clearActiveClasses();
             btnElement.classList.add('active');
-            currentCategory = cat;
             document.getElementById('song_editor').value = songDatabase[cat];
             document.getElementById('result').innerText = cat;
             updateWheel();
@@ -158,6 +161,8 @@
         function spinWheel() {
             if (isSpinning) return;
             const songs = document.getElementById('song_editor').value.split(',').filter(s => s.trim() !== "");
+            if (songs.length === 0) return;
+            
             isSpinning = true;
             sndSpin.currentTime = 0;
             sndSpin.playbackRate = 1.8;
@@ -170,7 +175,7 @@
 
             currentRotation += (Math.floor(Math.random() * 360) + 2880);
             document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
-            document.getElementById('result').innerText = "抽獎中...";
+            document.getElementById('result').innerText = "正在抽取...";
 
             setTimeout(() => {
                 clearInterval(speedDownTimer);
@@ -178,7 +183,7 @@
                 sndWin.play();
                 const finalAngle = (currentRotation % 360);
                 const index = Math.floor(((360 - (finalAngle % 360)) % 360) / (360 / songs.length));
-                document.getElementById('result').innerText = songs[index];
+                document.getElementById('result').innerText = songs[index % songs.length];
                 isSpinning = false;
             }, 2500);
         }
