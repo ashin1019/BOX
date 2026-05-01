@@ -40,11 +40,27 @@
         }
         .cat-btn.active, .cat-btn.all-active { background: var(--accent-warm); color: white; border-color: var(--accent-warm); }
 
-        .spin-btn { 
-            width: 80%; padding: 12px; background: var(--accent-active); color: white; 
-            font-size: 16px; border: none; border-radius: 25px; cursor: pointer; letter-spacing: 2px;
-            box-shadow: 0 4px 15px rgba(168, 155, 141, 0.3);
+        .action-group {
+            display: flex;
+            width: 85%;
+            gap: 12px;
+            margin-top: 5px;
         }
+        .spin-btn { 
+            flex: 1;
+            padding: 12px 0; 
+            color: white; 
+            font-size: 15px; 
+            border: none; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(168, 155, 141, 0.3);
+            transition: opacity 0.2s;
+        }
+        .spin-btn:active { transform: scale(0.98); }
+        .btn-normal { background: var(--accent-active); }
+        .btn-fast { background: #B0B0B0; }
 
         #song_editor { display: none; }
 
@@ -59,7 +75,7 @@
         .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 2px; height: 40px; background: var(--accent-active); z-index: 10; }
         .pointer::after { content: ''; position: absolute; bottom: -5px; left: -4px; width: 10px; height: 10px; background: var(--accent-active); border-radius: 50%; }
 
-        #wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform 2.5s cubic-bezier(0.1, 0, 0.1, 1); background: conic-gradient(#EEE 0%, #FFF 100%); }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#EEE 0%, #FFF 100%); }
 
         #result { 
             margin-top: 20px; font-size: 28px; color: var(--accent-active); 
@@ -88,7 +104,12 @@
             <button class="cat-btn" onclick="selectCategory('粤语精选', this)">粤语</button>
             <button class="cat-btn" onclick="selectCategory('闽南语精选', this)">闽南语</button>
         </div>
-        <button class="spin-btn" onclick="spinWheel()">点击开始抽取</button>
+        
+        <div class="action-group">
+            <button class="spin-btn btn-normal" onclick="spinWheel('normal')">正常抽取🎵</button>
+            <button class="spin-btn btn-fast" onclick="spinWheel('fast')">快速抽取⚡</button>
+        </div>
+
         <textarea id="song_editor"></textarea>
     </div>
 
@@ -164,34 +185,54 @@
             wheel.style.background = gradientStr.slice(0, -1) + ")";
         }
 
-        function spinWheel() {
+        function spinWheel(mode = 'normal') {
             if (isSpinning) return;
             const songs = document.getElementById('song_editor').value.split(',').filter(s => s.trim() !== "");
             if (songs.length === 0) return;
             
             isSpinning = true;
-            sndSpin.currentTime = 0;
-            sndSpin.playbackRate = 1.8;
-            sndSpin.play();
+            const wheel = document.getElementById('wheel');
 
-            let rateTracker = 1.8;
-            let speedDownTimer = setInterval(() => {
-                if (rateTracker > 0.5) { rateTracker -= 0.08; sndSpin.playbackRate = rateTracker; }
-            }, 80);
+            if (mode === 'fast') {
+                // 快速模式：无声音，0.2秒转完
+                wheel.style.transition = "transform 0.2s ease-out";
+                currentRotation += (Math.floor(Math.random() * 360) + 720);
+                wheel.style.transform = `rotate(${currentRotation}deg)`;
+                document.getElementById('result').innerText = "快速抽取中...";
 
-            currentRotation += (Math.floor(Math.random() * 360) + 2880);
-            document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
-            document.getElementById('result').innerText = "正在抽取...";
+                setTimeout(() => {
+                    const finalAngle = (currentRotation % 360);
+                    const index = Math.floor(((360 - (finalAngle % 360)) % 360) / (360 / songs.length));
+                    document.getElementById('result').innerText = songs[index % songs.length];
+                    isSpinning = false;
+                }, 200);
 
-            setTimeout(() => {
-                clearInterval(speedDownTimer);
-                sndSpin.pause();
-                sndWin.play();
-                const finalAngle = (currentRotation % 360);
-                const index = Math.floor(((360 - (finalAngle % 360)) % 360) / (360 / songs.length));
-                document.getElementById('result').innerText = songs[index % songs.length];
-                isSpinning = false;
-            }, 2500);
+            } else {
+                // 正常模式：有声音，2.5秒转完
+                wheel.style.transition = "transform 2.5s cubic-bezier(0.1, 0, 0.1, 1)";
+                sndSpin.currentTime = 0;
+                sndSpin.playbackRate = 1.8;
+                sndSpin.play();
+
+                let rateTracker = 1.8;
+                let speedDownTimer = setInterval(() => {
+                    if (rateTracker > 0.5) { rateTracker -= 0.08; sndSpin.playbackRate = rateTracker; }
+                }, 80);
+
+                currentRotation += (Math.floor(Math.random() * 360) + 2880);
+                wheel.style.transform = `rotate(${currentRotation}deg)`;
+                document.getElementById('result').innerText = "正在抽取...";
+
+                setTimeout(() => {
+                    clearInterval(speedDownTimer);
+                    sndSpin.pause();
+                    sndWin.play();
+                    const finalAngle = (currentRotation % 360);
+                    const index = Math.floor(((360 - (finalAngle % 360)) % 360) / (360 / songs.length));
+                    document.getElementById('result').innerText = songs[index % songs.length];
+                    isSpinning = false;
+                }, 2500);
+            }
         }
     </script>
 </body>
